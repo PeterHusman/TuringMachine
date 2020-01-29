@@ -4,7 +4,12 @@ using System.Text;
 
 namespace TuringMachine
 {
-    public class Tape<T>
+    public interface ITape<T>
+    {
+        T this[int pos] { get; set; }
+    }
+
+    public class Tape<T> : ITape<T>
     {
         private Dictionary<int, T> tapeValues { get; set; }
 
@@ -28,9 +33,8 @@ namespace TuringMachine
 
         }
 
-        public Tape(T blank, T[] initial)
+        public Tape(T blank, T[] initial) : this(blank)
         {
-            Blank = blank;
             for(int i = 0; i < initial.Length; i++)
             {
                 this[i] = initial[i];
@@ -43,7 +47,7 @@ namespace TuringMachine
             {
                 if(!tapeValues.ContainsKey(pos))
                 {
-                    tapeValues.Add(pos, Blank);
+                    return Blank;
                 }
                 return tapeValues[pos];
             }

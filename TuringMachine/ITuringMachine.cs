@@ -4,10 +4,10 @@ using System.Text;
 
 namespace TuringMachine
 {
-    public interface ITuringMachine<TState, TTape>
+    public interface ITuringMachine<TState, TTape> where TState : IEquatable<TState>
     {
         TState State { get; }
-        Tape<TTape> Tape { get; }
+        ITape<TTape> Tape { get; }
         int Head { get; }
         bool Step();
     }

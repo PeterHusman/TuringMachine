@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace TuringMachine
 {
@@ -11,37 +12,39 @@ namespace TuringMachine
         None = 0
     }
 
-    public class InstructionTableTuringMachine<TState, TTape> : ITuringMachine<TState, TTape>
+    public class InstructionTableTuringMachine<TState, TTape> : ITuringMachine<TState, TTape> where TState : IEquatable<TState>
     {
         public TState State { get; private set; }
 
-        public Tape<TTape> Tape { get; private set; }
+        public ITape<TTape> Tape { get; private set; }
 
         public int Head { get; private set; }
 
-        public IReadOnlyDictionary<(TState, TTape), (TapeMoveDirection movement, TState newState, (bool act, TTape val) tapeSymbol)> Instructions { get; private set; }
+        public IReadOnlyDictionary<(TState state, TTape tape), (TapeMoveDirection movement, TState newState, TTape tapeSymbol)> Instructions { get; private set; }
 
-        public InstructionTableTuringMachine(IReadOnlyDictionary<(TState, TTape), (TapeMoveDirection movement, TState newState, (bool act, TTape val) tapeSymbol)> instructions, TTape[] initialTape, int initialHead)
+        public InstructionTableTuringMachine(IReadOnlyDictionary<(TState state, TTape tape), (TapeMoveDirection movement, TState newState, TTape tapeSymbol)> instructions, ITape<TTape> initialTape, TState initialState, int initialHead)
         {
             Instructions = instructions;
             Head = initialHead;
-            Tape = new Tape<TTape>(initialTape);
+            Tape = initialTape;
+            State = initialState;
         }
 
         public bool Step()
         {
-            if(!Instructions.ContainsKey((State, Tape[Head])))
+            if (!Instructions.ContainsKey((State, Tape[Head])))
             {
                 return false;
             }
             var x = Instructions[(State, Tape[Head])];
             State = x.newState;
-            if(x.tapeSymbol.act)
-            {
-                Tape[Head] = x.tapeSymbol.val;
-            }
+            Tape[Head] = x.tapeSymbol;
             Head += (int)x.movement;
             return true;
         }
+
+        public bool InFinalState => !Instructions.Keys.Any(a => State.Equals(a.Item1));
+
+        public bool IsHalted => !Instructions.ContainsKey((State, Tape[Head]));
     }
 }
