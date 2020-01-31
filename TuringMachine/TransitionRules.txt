@@ -1,0 +1,40 @@
+﻿#Unary multiplication: sucky and painful
+input: '11*111'
+blank: ' '
+start state: rightSetup
+table:
+  cleanup:
+    [1,0]: {write: ' ', R: cleanup}
+    ['=', ' ']: {write: ' ', R: done}
+  take:
+    '*': {write: ' ', R: cleanup}
+    '1': {write: ' ', R: right}
+  rightSetup:
+    [1,0]: R
+    '*': {R: rightSetup2}
+    ' '  : {write: '=', L: left}
+  rightSetup2:
+    '1': {write: 0, R: rightSetup}
+    ' ': {L: terminationBegin}
+  right:
+    1: R
+    '*': {R: copyLeft}
+  copyGrab:
+    1: {write: 0, R: copyRight}
+    '=': {R: copyRight}
+  copyRight:
+    [1,'=']: R
+    ' ': {write: 1, L: copyLeft}
+  left:
+    [1,0,'*','=']  : L
+    ' ': {R: take}
+  copyLeft:
+    [1,'=']: L
+    '*': {R: firstZero}
+    0: {write: 1, R: copyGrab}
+  firstZero:
+    '1': {write: 0, L: left}
+  terminationBegin:
+    [1,0,'*']: {write: ' ', L: terminationBegin}
+    ' ': {R: done}
+  done:

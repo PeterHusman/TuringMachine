@@ -12,7 +12,7 @@ namespace TuringMachine
         None = 0
     }
 
-    public class InstructionTableTuringMachine<TState, TTape> : ITuringMachine<TState, TTape> where TState : IEquatable<TState>
+    public class TransitionRuleTableTuringMachine<TState, TTape> : ITuringMachine<TState, TTape> where TState : IEquatable<TState>
     {
         public TState State { get; private set; }
 
@@ -22,7 +22,7 @@ namespace TuringMachine
 
         public IReadOnlyDictionary<(TState state, TTape tape), (TapeMoveDirection movement, TState newState, TTape tapeSymbol)> Instructions { get; private set; }
 
-        public InstructionTableTuringMachine(IReadOnlyDictionary<(TState state, TTape tape), (TapeMoveDirection movement, TState newState, TTape tapeSymbol)> instructions, ITape<TTape> initialTape, TState initialState, int initialHead)
+        public TransitionRuleTableTuringMachine(IReadOnlyDictionary<(TState state, TTape tape), (TapeMoveDirection movement, TState newState, TTape tapeSymbol)> instructions, ITape<TTape> initialTape, TState initialState, int initialHead)
         {
             Instructions = instructions;
             Head = initialHead;
