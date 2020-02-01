@@ -54,6 +54,12 @@ namespace TuringMachine
 
             set
             {
+                if(value?.Equals(Blank) ?? Blank == null)
+                {
+                    tapeValues.Remove(pos);
+                    return;
+                }
+
                 if(!tapeValues.ContainsKey(pos))
                 {
                     tapeValues.Add(pos, value);

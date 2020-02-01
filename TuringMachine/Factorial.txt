@@ -1,0 +1,104 @@
+﻿#Unary factorial: downright hell
+input: '111111'
+blank: ' '
+start state: factCopyStart
+table:
+  totalFinal:
+    [1,' ']: {L: RealTotalDone}
+  RealTotalDone:
+  goRightThenDone:
+    ' ': R
+    1: {L: dddddone}
+  dddddone:
+    1: L
+    ' ': {R: RealTotalDone}
+ 
+  factCopyStart:
+    1: {write: 0, R: factCopyCont}
+    ' ': {write: 1, R: totalFinal}
+  factCopyCont:
+    1: R
+    ' ': {R: factCopyWrite}
+  factCopyWrite:
+    1: R
+    ' ': {write: 1, L: factCopyLeft}
+  factCopyLeft:
+    [1,' ']: L
+    0: {write: 1, R: factCopyMove}
+  factCopyMove:
+    1: {write: 0, R: factCopyCont}
+    ' ': {L: subOneFromStorage}
+  subOneFromStorage:
+    1: L
+    ' ': {R: subOneDone}
+  subOneDone:
+    1: {write: ' ', R: factCopy2Start}
+  factCopy2Start:
+    1: {write: 0, R: factCopyCont2}
+    ' ': {R: goRightThenDone}
+  factCopyCont2:
+    1: R
+    ' ': {R: factCopyGo2}
+  factCopyGo2:
+    ' ': R
+    1: {R: factCopyGo3}
+  factCopyGo3:
+    1: R
+    '*': {R: factCopyWrite2}
+    ' ': {write: '*', R: factCopyWrite2}
+  factCopyWrite2:
+    1: R
+    ' ': {write: 1, L: factCopyGoLeft2}
+  factCopyGoLeft2:
+    [1, ' ', '*']: L
+    0: {write: 1, R: factCopyMove2}
+  factCopyMove2:
+    1: {write: 0, R: factCopyCont2}
+    ' ': {R: factCopyMoveGo}
+  factCopyMoveGo:
+    ' ': R
+    1: {L: factCopyMoveGo2}
+  factCopyMoveGo2:
+    ' ': {R: rightSetup}
+
+
+
+  cleanup:
+    [1,0]: {write: ' ', R: cleanup}
+    ['=', ' ']: {write: ' ', L: semidone}
+  take:
+    '*': {write: ' ', R: cleanup}
+    '1': {write: ' ', R: right}
+  rightSetup:
+    [1,0]: R
+    '*': {R: rightSetup2}
+    ' '  : {write: '=', L: left}
+  rightSetup2:
+    '1': {write: 0, R: rightSetup}
+    ' ': {L: terminationBegin}
+  right:
+    1: R
+    '*': {R: copyLeft}
+  copyGrab:
+    1: {write: 0, R: copyRight}
+    '=': {R: copyRight}
+  copyRight:
+    [1,'=']: R
+    ' ': {write: 1, L: copyLeft}
+  left:
+    [1,0,'*','=']  : L
+    ' ': {R: take}
+  copyLeft:
+    [1,'=']: L
+    '*': {R: firstZero}
+    0: {write: 1, R: copyGrab}
+  firstZero:
+    '1': {write: 0, L: left}
+  terminationBegin:
+    [1,0,'*']: {write: ' ', L: terminationBegin}
+    ' ': {L: semidone}
+  semidone:
+    ' ': L
+    1: {R: semidonesemidone}
+  semidonesemidone:
+    ' ': {L: subOneFromStorage}

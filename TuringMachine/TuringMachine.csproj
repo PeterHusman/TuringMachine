@@ -12,7 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="TransitionRules.txt">
+    <None Update="Factorial.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Multiply.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
