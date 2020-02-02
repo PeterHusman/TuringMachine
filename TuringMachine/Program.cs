@@ -75,6 +75,7 @@ namespace TuringMachine
                             if(key.Modifiers.HasFlag(ConsoleModifiers.Shift))
                             {
                                 period = 400;
+                                runTimer.Dispose();
                                 runTimer = new Timer(TimerUpdate, runningMode, 400, 400);
                             }
                             else
