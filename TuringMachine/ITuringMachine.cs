@@ -8,6 +8,8 @@ namespace TuringMachine
     {
         TState State { get; }
         ITape<TTape> Tape { get; }
+        bool IsHalted { get; }
+        bool InFinalState { get; }
         int Head { get; }
         bool Step();
     }

@@ -114,7 +114,6 @@ namespace TuringMachine
                     break;
                 case RunMode.OnTimer:
                     throw new NotImplementedException();
-                    break;
             }
             
             FastRender(turingMachine);//, oldStatus.state, oldStatus.tape);
@@ -128,6 +127,8 @@ namespace TuringMachine
             int halfWidth = Console.BufferWidth / 2;
             Console.SetCursorPosition(halfWidth, 3);
             Console.WriteLine("v");
+            Console.SetCursorPosition(0, 8);
+            Console.Write("Nonblank cells:");
         }
 
         static void FastRender(TransitionRuleTableTuringMachine<string, char> tM)//, string oldS, char oldT)
@@ -163,6 +164,9 @@ namespace TuringMachine
                 var v = tM.Instructions[(tM.State, tM.Tape[tM.Head])];
                 Console.WriteLine($"({tM.State}, {tM.Tape[tM.Head]})   ->   {v.movement}, {v.newState}, {v.tapeSymbol}                                        ");
             }
+
+            Console.SetCursorPosition(20, 8);
+            Console.Write($"{((Tape<char>)tM.Tape).Values.Count}                        ");
         }
 
         static void Render(TransitionRuleTableTuringMachine<char, char> tM)
