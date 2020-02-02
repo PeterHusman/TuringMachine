@@ -13,6 +13,7 @@ namespace TuringMachine
     {
         static TransitionRuleTableTuringMachine<string, char> turingMachine;
         static Timer runTimer;
+        static int period = 400;
 
 
         static bool Run()
@@ -69,9 +70,25 @@ namespace TuringMachine
                         case ConsoleKey.D1:
                         case ConsoleKey.D2:
                         case ConsoleKey.D3:
-                        case ConsoleKey.D4:
                             advance = false;
                             runningMode = (RunMode)(key.Key - ConsoleKey.D1);
+                            if(key.Modifiers.HasFlag(ConsoleModifiers.Shift))
+                            {
+                                period = 400;
+                                runTimer = new Timer(TimerUpdate, runningMode, 400, 400);
+                            }
+                            else
+                            {
+                                runTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                            }
+                            break;
+                        case ConsoleKey.OemPlus:
+                            period = period <= 1 ? 1 : (period / 2);
+                            runTimer.Change(period, period);
+                            break;
+                        case ConsoleKey.OemMinus:
+                            period *= 2;
+                            runTimer.Change(period, period);
                             break;
                         case ConsoleKey.Escape:
                             return true;
@@ -115,6 +132,7 @@ namespace TuringMachine
             */
             while(Run())
             {
+                runTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 Console.Clear();
             }
         }
@@ -126,8 +144,7 @@ namespace TuringMachine
                 runTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 return;
             }
-            turingMachine.Step();
-            //FastRender
+            Update((RunMode)state);
         }
 
         static void Update(RunMode mode = RunMode.OncePerPress)
@@ -152,8 +169,6 @@ namespace TuringMachine
                         turingMachine.Step();
                     }
                     break;
-                case RunMode.OnTimer:
-                    throw new NotImplementedException();
             }
             
             FastRender(turingMachine);//, oldStatus.state, oldStatus.tape);
@@ -233,7 +248,6 @@ namespace TuringMachine
     {
         OncePerPress = 0,
         UntilStateChange = 1,
-        UntilDone = 2,
-        OnTimer = 3
+        UntilDone = 2
     }
 }
