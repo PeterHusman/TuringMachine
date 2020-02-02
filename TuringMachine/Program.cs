@@ -113,10 +113,9 @@ namespace TuringMachine
             };
             turingMachine = new InstructionTableTuringMachine<string, char>(instrTable, new Tape<char>(' ', "1111+111".ToCharArray()), "left", 0);
             */
-            while(true)
+            while(Run())
             {
                 Console.Clear();
-                Run();
             }
         }
 
