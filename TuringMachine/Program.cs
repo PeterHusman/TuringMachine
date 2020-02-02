@@ -35,7 +35,7 @@ namespace TuringMachine
             };
             turingMachine = new InstructionTableTuringMachine<string, char>(instrTable, new Tape<char>(' ', "1111+111".ToCharArray()), "left", 0);
             */
-            turingMachine = Parse(File.ReadAllText("Factorial.txt"));//, "111".ToCharArray());
+            turingMachine = Parse(File.ReadAllText("DivisibleByThree.txt"), "110".ToCharArray());//, "111".ToCharArray());
             RenderSetup();
             FastRender(turingMachine);
             runTimer = new Timer(TimerUpdate);
@@ -128,7 +128,7 @@ namespace TuringMachine
             Console.SetCursorPosition(halfWidth, 3);
             Console.WriteLine("v");
             Console.SetCursorPosition(0, 8);
-            Console.Write("Nonblank cells:");
+            Console.Write("Nonblank cell count:");
         }
 
         static void FastRender(TransitionRuleTableTuringMachine<string, char> tM)//, string oldS, char oldT)
@@ -165,7 +165,7 @@ namespace TuringMachine
                 Console.WriteLine($"({tM.State}, {tM.Tape[tM.Head]})   ->   {v.movement}, {v.newState}, {v.tapeSymbol}                                        ");
             }
 
-            Console.SetCursorPosition(20, 8);
+            Console.SetCursorPosition(25, 8);
             Console.Write($"{((Tape<char>)tM.Tape).Values.Count}                        ");
         }
 

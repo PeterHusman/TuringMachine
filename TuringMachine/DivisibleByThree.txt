@@ -1,0 +1,15 @@
+﻿input: '101'
+blank: ' '
+start state: r0
+table:
+	r0:
+		1: {R: r1}
+		0: {R: r0}
+		' ': {R: done}
+	done:
+	r1:
+		1: {R: r0}
+		0: {R: r2}
+	r2:
+		1: {R: r2}
+		0: {R: r1}
