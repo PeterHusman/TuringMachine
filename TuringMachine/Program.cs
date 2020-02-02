@@ -11,10 +11,88 @@ namespace TuringMachine
 {
     partial class Program
     {
-        static (string state, char tape) oldStatus = ("", ' ');
         static TransitionRuleTableTuringMachine<string, char> turingMachine;
         static Timer runTimer;
 
+
+        static bool Run()
+        {
+            Console.WriteLine("Please select one of the following files by number:");
+            string[] files = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.txt");
+            for (int i = 0; i < files.Length; i++)
+            {
+                Console.WriteLine($"{i}:\t{Path.GetFileNameWithoutExtension(files[i])}");
+            }
+            int j = -1;
+            while (j == -1)
+            {
+                string inp1 = Console.ReadLine();
+                if(inp1 == "")
+                {
+                    return false;
+                }
+                if (!int.TryParse(inp1, out j) || j < 0 || j >= files.Length)
+                {
+                    Console.WriteLine("Please enter a valid index.");
+                    j = -1;
+                }
+            }
+            string selectedFile = files[j];
+
+            Console.WriteLine($"{Path.GetFileNameWithoutExtension(files[j])} selected.\nPlease enter tape input or 'D' for default.");
+            string inp = Console.ReadLine();
+            if (inp == "D")
+            {
+                turingMachine = Parse(File.ReadAllText(selectedFile));
+            }
+            else
+            {
+                turingMachine = Parse(File.ReadAllText(selectedFile), inp.ToCharArray());
+            }
+            RenderSetup();
+            FastRender(turingMachine);
+            runTimer = new Timer(TimerUpdate);
+            (int width, int height) = (Console.BufferWidth, Console.BufferHeight);
+            RunMode runningMode = RunMode.OncePerPress;
+            while (true)
+            {
+                while (!Console.KeyAvailable)
+                {
+
+                }
+                bool advance = true;
+                while (Console.KeyAvailable)
+                {
+                    ConsoleKeyInfo key = Console.ReadKey(true);
+                    switch (key.Key)
+                    {
+                        case ConsoleKey.D1:
+                        case ConsoleKey.D2:
+                        case ConsoleKey.D3:
+                        case ConsoleKey.D4:
+                            advance = false;
+                            runningMode = (RunMode)(key.Key - ConsoleKey.D1);
+                            break;
+                        case ConsoleKey.Escape:
+                            return true;
+                        default:
+                            advance = true;
+                            break;
+                    }
+                }
+                if (!advance)
+                {
+                    continue;
+                }
+                //Render(turingMachine);
+                if ((width, height) != (Console.BufferWidth, Console.BufferHeight))
+                {
+                    (width, height) = (Console.BufferWidth, Console.BufferHeight);
+                    RenderSetup();
+                }
+                Update(runningMode);
+            }
+        }
         
         static void Main(string[] args)
         {
@@ -35,48 +113,11 @@ namespace TuringMachine
             };
             turingMachine = new InstructionTableTuringMachine<string, char>(instrTable, new Tape<char>(' ', "1111+111".ToCharArray()), "left", 0);
             */
-            turingMachine = Parse(File.ReadAllText("DivisibleByThree.txt"), "110".ToCharArray());//, "111".ToCharArray());
-            RenderSetup();
-            FastRender(turingMachine);
-            runTimer = new Timer(TimerUpdate);
-            (int width, int height) = (Console.BufferWidth, Console.BufferHeight);
-            RunMode runningMode = RunMode.OncePerPress;
-            while (true)
+            while(true)
             {
-                while (!Console.KeyAvailable)
-                {
-
-                }
-                bool advance = true;
-                while (Console.KeyAvailable)
-                {
-                    ConsoleKeyInfo key = Console.ReadKey(true);
-                    switch(key.Key)
-                    {
-                        case ConsoleKey.D1:
-                        case ConsoleKey.D2:
-                        case ConsoleKey.D3:
-                        case ConsoleKey.D4:
-                            advance = false;
-                            runningMode = (RunMode)(key.Key - ConsoleKey.D1);
-                            break;
-                        default:
-                            advance = true;
-                            break;
-                    }
-                }
-                if(!advance)
-                {
-                    continue;
-                }
-                //Render(turingMachine);
-                if ((width, height) != (Console.BufferWidth, Console.BufferHeight))
-                {
-                    (width, height) = (Console.BufferWidth, Console.BufferHeight);
-                    RenderSetup();
-                }
-                Update(runningMode);
-             }
+                Console.Clear();
+                Run();
+            }
         }
 
         static void TimerUpdate(object state)
