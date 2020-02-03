@@ -13,6 +13,7 @@ namespace TuringMachine
     {
         static TransitionRuleTableTuringMachine<string, char> turingMachine;
         static Timer runTimer;
+        static bool timerRunning = false;
         static int period = 400;
 
 
@@ -77,19 +78,29 @@ namespace TuringMachine
                                 period = 400;
                                 runTimer.Dispose();
                                 runTimer = new Timer(TimerUpdate, runningMode, 400, 400);
+                                timerRunning = true;
                             }
                             else
                             {
                                 runTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                                timerRunning = false;
                             }
                             break;
                         case ConsoleKey.OemPlus:
                             period = period <= 1 ? 1 : (period / 2);
-                            runTimer.Change(period, period);
+                            if (timerRunning)
+                            {
+                                runTimer.Change(period, period);
+                            }
+                            advance = !timerRunning;
                             break;
                         case ConsoleKey.OemMinus:
                             period *= 2;
-                            runTimer.Change(period, period);
+                            if (timerRunning)
+                            {
+                                runTimer.Change(period, period);
+                            }
+                            advance = !timerRunning;
                             break;
                         case ConsoleKey.Escape:
                             return true;
@@ -134,6 +145,7 @@ namespace TuringMachine
             while(Run())
             {
                 runTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                timerRunning = false;
                 Console.Clear();
             }
         }
@@ -143,6 +155,7 @@ namespace TuringMachine
             if(turingMachine.IsHalted)
             {
                 runTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                timerRunning = false;
                 return;
             }
             Update((RunMode)state);
