@@ -56,6 +56,7 @@ namespace TuringMachine
             runTimer = new Timer(TimerUpdate);
             (int width, int height) = (Console.BufferWidth, Console.BufferHeight);
             RunMode runningMode = RunMode.OncePerPress;
+            int tempHead = 0;
             while (true)
             {
                 while (!Console.KeyAvailable)
@@ -102,9 +103,20 @@ namespace TuringMachine
                             }
                             advance = !timerRunning;
                             break;
+                        case ConsoleKey.LeftArrow:
+                            tempHead--;
+                            advance = false;
+                            RenderTapeFromArbitrary(turingMachine, tempHead);
+                            continue;
+                        case ConsoleKey.RightArrow:
+                            tempHead++;
+                            advance = false;
+                            RenderTapeFromArbitrary(turingMachine, tempHead);
+                            continue;
                         case ConsoleKey.Escape:
                             return true;
                         default:
+                            tempHead = turingMachine.Head;
                             advance = true;
                             break;
                     }
@@ -120,6 +132,17 @@ namespace TuringMachine
                     RenderSetup();
                 }
                 Update(runningMode);
+                tempHead = turingMachine.Head;
+            }
+        }
+
+        static void RenderTapeFromArbitrary(TransitionRuleTableTuringMachine<string, char> tM, int center)
+        {
+            int halfWidth = Console.BufferWidth / 2;
+            Console.SetCursorPosition(0, 4);
+            for (int i = center - halfWidth; i < center + halfWidth; i++)
+            {
+                Console.Write(tM.Tape[i]);
             }
         }
         

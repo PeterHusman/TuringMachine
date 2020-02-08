@@ -1,0 +1,90 @@
+﻿#UTM: Universally painful
+input: 'ee ; D A D D C R D A A ; D A A D D R D A A A ; D A A A D D C C R D A A A A ; D A A A A D D R D A :: D A A DhD'
+blank: ' '
+start state: instrStart
+table:
+  instrStart:
+    [e,' ',D,C,A,R,L]: R #CARL
+    ';': {R: writeZ}
+    ':': {R: goToGetState}
+  writeZ:
+    'D': {R: writeZReally}
+    ' ': R
+  writeZReally:
+    ' ': {write: 'z', R: instrStart}
+  goToGetState:
+    ':': R
+    ' ': {R: writeY}
+  writeY:
+    'D': R
+    ' ': {write: 'y', R: checkStateA}
+  checkStateA:
+    'A': {L: checkZForA}
+    'D': {L: checkZForD}
+  checkZForA:
+    [';',':',' ',y,D,C,A,R,L]: L
+    'z': {write: ' ', R: checkZForA2}
+    'e': {R: advanceY}
+  checkZForA2:
+    'A': {R: writeZForA}
+    'D': {L: checkZForA}
+  writeZForA:
+    ' ': {write: 'z', L: checkZForA}
+  advanceY:
+    [';',' ',y,D,C,A,R,L,z,e]: R
+    ':': {R: advanceY2}
+  advanceY2:
+    [':',D,A,' ']: R
+    'y': {write: ' ', R: writeNewY}
+  writeNewY:
+    'A': R
+    ' ': {write: 'y', R: checkStateA}
+   
+  checkZForD:
+    [';',':',' ',y,D,C,A,R,L]: L
+    'z': {write: ' ', R: checkZForD2}
+    'e': {R: advanceYStateFound}
+  checkZForD2:
+    'D': {R: writeZForD}
+    'A': {L: checkZForD}
+  writeZForD:
+    ' ': {write: 'z', L: checkZForD}
+  advanceYStateFound:
+    [';',' ',y,D,C,A,R,L,z,e]: R
+    ':': {R: advanceYStateFound2}
+  advanceYStateFound2:
+    [':',D,A,' ']: R
+    'y': {write: ' ', R: writeNewYStateFound}
+  writeNewYStateFound:
+    'A': R
+    'D': {R: filterBySymbol}
+    #' ': {write: 'y', R: filterBySymbol}
+  filterBySymbol:
+    [' ','D','A','C']: R
+    'h': {R: filterBySymbolStart}
+  filterBySymbolStart:
+    'D': R
+    ' ': {write: 'y', L: checkSymbol}
+  checkSymbol:
+    'C': {L: checkZForC}
+    'D': {L: checkZForDSymbol}
+  checkZForC:
+    [';',':',' ',h,y,D,C,A,R,L]: L
+    'z': {write: ' ', R: checkZForC2}
+    #'e': {R: advanceY}
+  checkZForC2:
+    'C': {R: writeZForC}
+    'D': {L: checkZForC}
+  writeZForC:
+    ' ': {write: 'z', L: checkZForC}
+  checkZForDSymbol:
+    [';',':',' ',h,y,D,C,A,R,L]: L
+    'z': {write: ' ', R: checkZForDSymbol2}
+    'e': {R: advanceYInstrFound}
+  checkZForDSymbol2:
+    'D': {R: writeZForDSymbol}
+    'A': {L: checkZForDSymbol}
+  writeZForDSymbol:
+    ' ': {write: 'z', L: checkZForDSymbol}
+  advanceYInstrFound:
+  
