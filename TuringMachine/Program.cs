@@ -230,8 +230,8 @@ namespace TuringMachine
             Console.SetCursorPosition(20, 1);
             Console.Write($"{tM.InFinalState}         ");
             int halfWidth = Console.BufferWidth / 2;
-            Console.SetCursorPosition(halfWidth - (tM.State.Length / 2) - 10, 2);
-            Console.WriteLine($"          {tM.State}          ");
+            Console.SetCursorPosition(halfWidth - (tM.State.Length / 2) - 20, 2);
+            Console.WriteLine($"                    {tM.State}                    ");
             Console.WriteLine();
             for (int i = tM.Head - halfWidth; i < tM.Head + halfWidth; i++)
             {

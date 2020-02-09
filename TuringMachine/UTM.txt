@@ -1,5 +1,5 @@
 ﻿#UTM: Universally painful
-input: 'ee ; D A D D C R D A A ; D A A D D R D A A A ; D A A A D D C C R D A A A A ; D A A A A D D R D A :: D A A DhD'
+input: 'ee ; D A D D C R D A A ; D A A D D R D A A A ; D A A D C D R D A A A ; D A A A D D C C R D A A A A ; D A A A A D D R D A :: D A A DhD C D'
 blank: ' '
 start state: instrStart
 table:
@@ -64,14 +64,14 @@ table:
     'h': {R: filterBySymbolStart}
   filterBySymbolStart:
     'D': R
-    ' ': {write: 'y', L: checkSymbol}
+    ' ': {write: 'y', R: checkSymbol}
   checkSymbol:
     'C': {L: checkZForC}
     'D': {L: checkZForDSymbol}
   checkZForC:
     [';',':',' ',h,y,D,C,A,R,L]: L
     'z': {write: ' ', R: checkZForC2}
-    #'e': {R: advanceY}
+    'e': {R: advanceYSymbol}
   checkZForC2:
     'C': {R: writeZForC}
     'D': {L: checkZForC}
@@ -83,8 +83,102 @@ table:
     'e': {R: advanceYInstrFound}
   checkZForDSymbol2:
     'D': {R: writeZForDSymbol}
-    'A': {L: checkZForDSymbol}
+    ['A','C']: {L: checkZForDSymbol}
   writeZForDSymbol:
     ' ': {write: 'z', L: checkZForDSymbol}
+  advanceYSymbol:
+    [';',' ',y,D,C,A,R,L,z,e]: R
+    ':': {R: advanceYSymbol2}
+  advanceYSymbol2:
+    [':',h,D,A,' ']: R
+    'y': {write: ' ', R: writeNewYSymbol}
+  writeNewYSymbol:
+    ['A','C','D']: R
+    ' ': {write: 'y', R: checkSymbol}
   advanceYInstrFound:
-  
+    [';',' ',y,D,C,A,R,L,e]: R
+    'z': {R: findNewStateStart}
+  findNewStateStart:
+    [';',' ',y,D,C,R,L,e]: R
+    'A': {R: writeNewStateSymbol}
+  writeNewStateSymbol:
+    ' ': {write: 'n', R: addOneCharToState}
+  addOneCharToState:
+    [';',' ',y,D,A,C,R,L,e]: R
+    ':': {R: colonRegionOneAddState}
+  colonRegionOneAddState:
+    [';',h,':',y,D,A,C,R,L,e]: R
+    ' ': {R: colonRegionOneAddStatePostColonPostSpace}
+  colonRegionOneAddStatePostColonPostSpace:
+    [';',h,y,D,A,C,R,L,e]: {R: colonRegionOneAddStatePostColon}
+    ' ': {write: ':', R: addNewColonRegion}
+    ':': {R: colonRegionTwoAddState}
+  colonRegionOneAddStatePostColon:
+    [';',h,y,D,A,C,R,L,e]: R
+    ' ': {R: colonRegionOneAddStatePostColonPostSpace}
+    #':': {R: colonRegionOneAddStatePostColonPostSpace}
+  addNewColonRegion:
+    ' ': {write: ':', R: addNewColonRegion2}
+  addNewColonRegion2:
+    ' ': {R: addNewColonRegion3}
+  addNewColonRegion3:
+    ' ': {write: 'D', R: colonRegionTwoAddState}
+  colonRegionTwoAddState:
+    [';',':',h,y,D,A,C,R,L,e]: R
+    ' ': {R: colonRegionTwoAddStatePostSpace}
+  colonRegionTwoAddStatePostSpace:
+    ' ': {write: 'A', L: findN}
+    [';',h,y,D,A,C,R,L,e]: {R: colonRegionTwoAddState}
+  findN:
+    [';',':',' ',h,y,D,A,C,R,L,e]: L
+    'n': {write: ' ', R: moveN}
+  moveN:
+    ';': {R: goToColonAreasForCopy}
+    'A': R
+    ' ': {write: 'n', R: addOneCharToState}
+  goToColonAreasForCopy:
+    [';',' ',h,y,D,A,C,R,L,e]: R
+    ':': {R: identifyStateStart}
+  identifyStateStart:
+    [' ',':']: R
+    'D': {R: identifyStateEnd}
+  identifyStateEnd:
+    [' ','A']: R
+    'h': {L: addBlankLeftStart}
+    'D': {write: 'm', R: copyD}
+  addBlankLeftStart:
+    ' ': {write: 'm', R: copyD}
+  copyD:
+    [' ','C','D','h','y']: R
+    ':': copyDFindSpot
+  copyDFindSpot:
+    [':','D','C','A','h','y']: R
+    ' ': {R: copyDFindSpotPostSpace}
+  copyDFindSpotPostSpace:
+    [':','D','C','A','h']: {R: copyDFindSpot}
+    ' ': {write: 'D', L: getNextToCopy}
+  copyC:
+    [' ','C','D','h','y']: R
+    ':': copyCFindSpot
+  copyCFindSpot:
+    [':','D','C','A','h','y']: R
+    ' ': {R: copyCFindSpotPostSpace}
+  copyCFindSpotPostSpace:
+    [':','D','C','A','h']: {R: copyCFindSpot}
+    ' ': {write: 'C', L: getNextToCopy}
+
+  getNextToCopy:
+    [':','D','C','A','h','y',' ']: L
+    'm': {R: scanForCopy}
+  scanForCopy:
+    ' ': R
+    'D': {R: copyD}
+    'C': {R: copyC}
+    'h': {L: readValueToCopy}
+  readValueToCopy:
+    [':','D','C','A','h','y','m',' ','R','L']: L
+    'z': {L: scanForLongCopy}
+  scanForLongCopy:
+    'D': #Go until colon area and switch to copyD
+    'C': #Go until colon area and switch to copyC
+    #After either, advance z and if R or L is found go back to normal copying from old tape
