@@ -1,5 +1,5 @@
 ﻿#UTM: Universally painful
-input: 'ee ; D A D D C R D A A ; D A A D D R D A A A ; D A A D C D R D A A A ; D A A A D D C C R D A A A A ; D A A A A D D R D A :: D A A DhD C D'
+input: 'ee ; D A D D C R D A A ; D A A D D R D A A A ; D A A D C D R D A A A ; D A A A D D C C R D A A A A ; D A A A A D D R D A :: D A AhD C D'
 blank: ' '
 start state: instrStart
 table:
@@ -20,7 +20,7 @@ table:
     ' ': {write: 'y', R: checkStateA}
   checkStateA:
     'A': {L: checkZForA}
-    'D': {L: checkZForD}
+    ['D','h']: {L: checkZForD}
   checkZForA:
     [';',':',' ',y,D,C,A,R,L]: L
     'z': {write: ' ', R: checkZForA2}
@@ -38,6 +38,7 @@ table:
     'y': {write: ' ', R: writeNewY}
   writeNewY:
     'A': R
+    'h': {L: checkZForD}
     ' ': {write: 'y', R: checkStateA}
    
   checkZForD:
@@ -55,10 +56,12 @@ table:
   advanceYStateFound2:
     [':',D,A,' ']: R
     'y': {write: ' ', R: writeNewYStateFound}
+    'h': {R: filterBySymbolStart}
   writeNewYStateFound:
     'A': R
     'D': {R: filterBySymbol}
     #' ': {write: 'y', R: filterBySymbol}
+    'h': {R: filterBySymbolStart}
   filterBySymbol:
     [' ','D','A','C']: R
     'h': {R: filterBySymbolStart}
@@ -147,9 +150,9 @@ table:
     'h': {L: addBlankLeftStart}
     'D': {write: 'm', R: copyD}
   addBlankLeftStart:
-    ' ': {write: 'm', R: copyD}
+    [' ','A']: {write: 'm', R: copyD}
   copyD:
-    [' ','C','D','h','y']: R
+    [' ','C','D','h','y','A','m']: R
     ':': copyDFindSpot
   copyDFindSpot:
     [':','D','C','A','h','y']: R
@@ -158,7 +161,7 @@ table:
     [':','D','C','A','h']: {R: copyDFindSpot}
     ' ': {write: 'D', L: getNextToCopy}
   copyC:
-    [' ','C','D','h','y']: R
+    [' ','C','D','h','y','A','m']: R
     ':': copyCFindSpot
   copyCFindSpot:
     [':','D','C','A','h','y']: R
@@ -166,19 +169,115 @@ table:
   copyCFindSpotPostSpace:
     [':','D','C','A','h']: {R: copyCFindSpot}
     ' ': {write: 'C', L: getNextToCopy}
-
   getNextToCopy:
     [':','D','C','A','h','y',' ']: L
     'm': {R: scanForCopy}
   scanForCopy:
-    ' ': R
-    'D': {R: copyD}
-    'C': {R: copyC}
+    [' ','y']: R
+    'D': {write: 'm', R: copyD}
+    'C': {write: 'm', R: copyC}
     'h': {L: readValueToCopy}
+    ':': {L: getDir}
   readValueToCopy:
-    [':','D','C','A','h','y','m',' ','R','L']: L
+    [':','D','C','A','h','y','m',' ',';','R','L']: L
     'z': {L: scanForLongCopy}
   scanForLongCopy:
-    'D': #Go until colon area and switch to copyD
-    'C': #Go until colon area and switch to copyC
-    #After either, advance z and if R or L is found go back to normal copying from old tape
+    'D': {R: goToColonCopyDAndMoveZ}
+    'C': {R: goToColonCopyCAndMoveZ}
+    'R': {R: clearZMoveR}
+    'L': {R: clearZMoveL}
+  goToColonCopyDAndMoveZ:
+    ['D','C','A','h','y','m',';','R','L']: R
+    'z': {write: ' ', R: goToColonCopyDAndMoveZ}
+    ' ': {write: 'z', R: goToColonCopyD}
+  goToColonCopyD:
+    ['D','C','A','h',' ','y','m',';','R','L']: R
+    ':': {R: goToSpaceCopyD}
+  goToSpaceCopyD:
+    ':': R
+    ' ': {R: copyD}
+  goToColonCopyCAndMoveZ:
+    ['D','C','A','h','y','m',';','R','L']: R
+    'z': {write: ' ', R: goToColonCopyCAndMoveZ}
+    ' ': {write: 'z', R: goToColonCopyC}
+  goToColonCopyC:
+    ['D','C','A','h',' ','y','m',';','R','L']: R
+    ':': {R: goToSpaceCopyC}
+  goToSpaceCopyC:
+    ':': R
+    ' ': {R: copyC}
+  clearZMoveR:
+    ['D','C','A','h',' ','y','m',';','R','L']: R
+    'z': {write: ' ', R: clearZMoveR}
+    ':': {R: clearHMoveR}
+  clearZMoveL:
+    ['D','C','A','h',' ','y','m',';','R','L']: R
+    'z': {write: ' ', R: clearZMoveL}
+    ':': {R: clearHMoveL}
+  clearHMoveR:
+    ['C','A','h',':',' ','y','m',';','R','L']: R
+    'D': {write: 'R', R: clearH}
+  clearHMoveL:
+    ['C','A','h',':',' ','y','m',';','R','L']: R
+    'D': {write: 'L', R: clearH}
+  clearH:
+    ['C','D','A',':',' ','y','m',';','R','L']: R
+    'h': {write: 'm', R: clearUntilD2}
+  clearUntilD2:
+    'D': {write: 'm', R: clearUntilD}
+  clearUntilD:
+    [' ','C','y']: {write: 'm', R: clearUntilD}
+    'D': {write: 'm', R: copyDWithH}
+  copyDWithH:
+    [' ','C','D','h','y','A','m']: R
+    ':': copyDWithHFindSpot
+  copyDWithHFindSpot:
+    [':','D','C','A','h','y']: R
+    ' ': {R: copyDWithHFindSpotPostSpace}
+  copyDWithHFindSpotPostSpace:
+    [':','D','C','A','h']: {R: copyDWithHFindSpot}
+    ' ': {write: 'D', L: hThenCopy}
+  hThenCopy:
+    ['A',' ','C']: L
+    'D': {L: realHThenCopy}
+  realHThenCopy:
+    ' ': {write: 'h', L: getNextToCopy}
+  getDir:
+    ['A','m',' ']: L
+    'R': {R: bringHRight}
+    'L': {R: bringHLeft}
+  bringHRight:
+    ['m',' ',':','D','C','A']: R
+    'h': {write: ' ', R: bringHRight2}
+  bringHRight2:
+    'D': {R: bringHRight3}
+  bringHRight3:
+    'C': R
+    ' ': {R: bringHRight4}
+  bringHRight4:
+    ' ': {write: 'h', R: writeDThenErase}
+    'C': {R: bringHRight3}
+    'D': {L: addHThenErase}
+  writeDThenErase:
+    ' ': {write: 'D', L: goColonThenErase}
+  addHThenErase:
+    ' ': {write: 'h', L: goColonThenErase}
+  bringHLeft:
+    ['m',' ',':','D','C','A']: R
+    'h': {write: ' ', R: bringHLeft2}
+  bringHLeft2:
+    [' ','C','A']: L
+    'D': {L: addHThenErase}
+  goColonThenErase:
+    [' ','C','A','D']: L
+    ':': {L: goSpaceThenErase}
+  goSpaceThenErase:
+    ':': L
+    ' ': {L: erase}
+  erase:
+    [' ','C','A','D','y','R','L']: {write: ' ', L: goSpaceThenErase}
+    ':': {write: ' ', L: deleteColonGoLeft}
+  deleteColonGoLeft:
+    ':': {write: ' ', L: deleteColonGoLeft}
+    [' ','C','A','D',';','R','L']: L
+    'e': {L: instrStart}
