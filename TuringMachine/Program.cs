@@ -141,7 +141,7 @@ namespace TuringMachine
                     RenderSetup();
                 }
                 Update(runningMode, stateToJumpTo);
-                tempHead = turingMachine.Head;
+                  tempHead = turingMachine.Head;
             }
         }
 
