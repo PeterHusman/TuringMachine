@@ -103,6 +103,7 @@ table:
   advanceYInstrFound:
     [';',' ',y,D,C,A,R,L,e]: R
     'z': {R: findNewStateStart}
+    ':': {write: ' ', L: finalEraseUntilE}
   findNewStateStart:
     [';',' ',y,D,C,R,L,e]: R
     'A': {R: writeNewStateSymbol}
@@ -267,7 +268,7 @@ table:
     ' ': {write: 'h', L: goColonThenErase}
   bringHLeft:
     ['m',' ',':','D','C','A']: R
-    'h': {write: ' ', R: bringHLeft2}
+    'h': {write: ' ', L: bringHLeft2}
   bringHLeft2:
     [' ','C','A']: L
     'D': {L: addHThenErase}
@@ -284,3 +285,15 @@ table:
     ':': {write: ' ', L: deleteColonGoLeft}
     [' ','C','A','D',';','R','L']: L
     'e': {L: instrStart}
+  finalEraseUntilE:
+    [' ','C','A','D',';','R','L']: {write: ' ', L: finalEraseUntilE}
+    'e': {write: ' ', L: finalErase2}
+  finalErase2:
+    'e': {write: ' ', R: finalErase2}
+    [' ',':',D,A,R,L,C,h]: R
+    'y': {write: ' ', L: finalErase3}
+  finalErase3:
+    [' ',D,A,R,L,C,h]: L
+    ':': {write: ' ', R: moveToDForCompletion}
+  moveToDForCompletion:
+    ' ': {R: complete}

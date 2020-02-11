@@ -57,6 +57,7 @@ namespace TuringMachine
             (int width, int height) = (Console.BufferWidth, Console.BufferHeight);
             RunMode runningMode = RunMode.OncePerPress;
             int tempHead = 0;
+            string stateToJumpTo = null;
             while (true)
             {
                 while (!Console.KeyAvailable)
@@ -69,9 +70,17 @@ namespace TuringMachine
                     ConsoleKeyInfo key = Console.ReadKey(true);
                     switch (key.Key)
                     {
+                        case ConsoleKey.Enter:
+                            advance = false;
+                            Console.WriteLine();
+                            stateToJumpTo = Console.ReadLine();
+                            RenderSetup();
+                            FastRender(turingMachine);
+                            continue;
                         case ConsoleKey.D1:
                         case ConsoleKey.D2:
                         case ConsoleKey.D3:
+                        case ConsoleKey.D4:
                             advance = false;
                             runningMode = (RunMode)(key.Key - ConsoleKey.D1);
                             if(key.Modifiers.HasFlag(ConsoleModifiers.Shift))
@@ -131,7 +140,7 @@ namespace TuringMachine
                     (width, height) = (Console.BufferWidth, Console.BufferHeight);
                     RenderSetup();
                 }
-                Update(runningMode);
+                Update(runningMode, stateToJumpTo);
                 tempHead = turingMachine.Head;
             }
         }
@@ -184,7 +193,7 @@ namespace TuringMachine
             Update((RunMode)state);
         }
 
-        static void Update(RunMode mode = RunMode.OncePerPress)
+        static void Update(RunMode mode = RunMode.OncePerPress, string stateToJumpTo = null)
         {
             //oldStatus.state = turingMachine.State;
             //oldStatus.tape = turingMachine.Tape[turingMachine.Head];
@@ -202,6 +211,16 @@ namespace TuringMachine
                     break;
                 case RunMode.UntilDone:
                     while(!turingMachine.IsHalted)
+                    {
+                        turingMachine.Step();
+                    }
+                    break;
+                case RunMode.UntilSpecific:
+                    while(turingMachine.State == stateToJumpTo)
+                    {
+                        turingMachine.Step();
+                    }
+                    while(turingMachine.State != stateToJumpTo && !turingMachine.IsHalted && stateToJumpTo != null)
                     {
                         turingMachine.Step();
                     }
@@ -285,6 +304,7 @@ namespace TuringMachine
     {
         OncePerPress = 0,
         UntilStateChange = 1,
-        UntilDone = 2
+        UntilDone = 2,
+        UntilSpecific = 3
     }
 }
