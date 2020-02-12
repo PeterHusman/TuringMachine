@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 
 namespace TuringMachine
@@ -20,7 +21,7 @@ namespace TuringMachine
         static bool Run()
         {
             Console.WriteLine("Please select one of the following files by number:");
-            string[] files = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.txt");
+            string[] files = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.txt", SearchOption.AllDirectories);
             for (int i = 0; i < files.Length; i++)
             {
                 Console.WriteLine($"{i}:\t{Path.GetFileNameWithoutExtension(files[i])}");
@@ -41,11 +42,25 @@ namespace TuringMachine
             }
             string selectedFile = files[j];
 
-            Console.WriteLine($"{Path.GetFileNameWithoutExtension(files[j])} selected.\nPlease enter tape input or 'D' for default.");
+            Console.WriteLine($"{Path.GetFileNameWithoutExtension(files[j])} selected.\nPlease enter tape input, 'C' for until-empty-line, 'F' for from-file, or 'D' for default.");
             string inp = Console.ReadLine();
             if (inp == "D")
             {
                 turingMachine = Parse(File.ReadAllText(selectedFile));
+            }
+            else if(inp == "C")
+            {
+                string final = "";
+                while (inp != "")
+                {
+                    inp = Console.ReadLine();
+                    final += inp;
+                }
+                turingMachine = Parse(File.ReadAllText(selectedFile), final.ToCharArray());
+            }
+            else if(inp == "F")
+            {
+                turingMachine = Parse(File.ReadAllText(selectedFile), File.ReadAllText(Console.ReadLine()).ToCharArray());
             }
             else
             {
@@ -83,6 +98,12 @@ namespace TuringMachine
                             stateToJumpTo = Console.ReadLine();
                             RenderSetup();
                             FastRender(turingMachine);
+                            continue;
+                        case ConsoleKey.U:
+                            advance = false;
+                            Console.Clear();
+                            Console.WriteLine(UTMify(turingMachine));
+                            nextCharClear = true;
                             continue;
                         case ConsoleKey.T:
                             advance = false;
@@ -173,7 +194,7 @@ namespace TuringMachine
                     RenderSetup();
                 }
                 Update(runningMode, stateToJumpTo);
-                  tempHead = turingMachine.Head;
+                tempHead = turingMachine.Head;
             }
         }
 
@@ -312,23 +333,112 @@ namespace TuringMachine
             Console.Write($"{((Tape<char>)tM.Tape).Values.Count}                        ");
         }
 
-        static void Render(TransitionRuleTableTuringMachine<char, char> tM)
+        static string UTMify(TransitionRuleTableTuringMachine<string, char> tM)
         {
-            Console.Clear();
-            Console.WriteLine($"Halted:\t{tM.IsHalted}\nFinal State:\t{tM.InFinalState}\n\n");
-            int halfWidth = Console.BufferWidth / 2;
-            Console.CursorLeft = halfWidth;
-            Console.WriteLine(tM.Tape[tM.Head]);
-            for (int i = tM.Head - halfWidth; i < tM.Head + halfWidth; i++)
+            Tape<char> tape = tM.Tape as Tape<char>;
+            //(char val, int pos)[] items = tape.Values.OrderBy(a => a.Key).Select(a => (a.Value, a.Key)).ToArray();
+            int minPos = tape.Values.Min(a => a.Key);
+            minPos = tM.Head < minPos ? tM.Head : minPos;
+            int maxPos = tape.Values.Max(a => a.Key);
+            maxPos = tM.Head > maxPos ? tM.Head : maxPos;
+            Dictionary<string, int> stateInds = new Dictionary<string, int>();
+            Dictionary<char, int> charInds = new Dictionary<char, int>();
+            StringBuilder sB = new StringBuilder("ee ");
+
+            int maxStateIndAdded = 1;
+            int GetStateInd(string s)
             {
-                Console.Write(tM.Tape[i]);
+                if(stateInds.ContainsKey(s))
+                {
+                    return stateInds[s];
+                }
+
+                stateInds.Add(s, maxStateIndAdded++);
+                return maxStateIndAdded - 1;
             }
-            Console.WriteLine();
-            Console.WriteLine();
-            foreach (var key in tM.Instructions.Keys)
+
+            int maxCharIndAdded = 1;
+            int GetCharInd(char s)
             {
-                Console.WriteLine($"({key.state}, {key.tape})\t->\t{tM.Instructions[key].movement}, {tM.Instructions[key].newState}, {tM.Instructions[key].tapeSymbol}");
+                if(s == ' ')
+                {
+                    return 0;
+                }
+                if (charInds.ContainsKey(s))
+                {
+                    return charInds[s];
+                }
+
+                charInds.Add(s, maxCharIndAdded++);
+                return maxCharIndAdded - 1;
             }
+
+            void AddState(string state)
+            {
+                sB.Append("D ");
+                int n = GetStateInd(state);
+                for(int i = 0; i < n; i++)
+                {
+                    sB.Append("A ");
+                }
+            }
+
+            void AddChar(char c)
+            {
+                sB.Append("D ");
+                int n = GetCharInd(c);
+                for (int i = 0; i < n; i++)
+                {
+                    sB.Append("C ");
+                }
+            }
+
+            foreach (var v in tM.Instructions)
+            {
+                sB.Append("; ");
+                AddState(v.Key.state);
+                AddChar(v.Key.tape);
+                AddChar(v.Value.tapeSymbol);
+                if(v.Value.movement == TapeMoveDirection.None)
+                {
+
+                }
+                sB.Append(v.Value.movement == TapeMoveDirection.Right ? "R " : "L ");
+                AddState(v.Value.newState);
+            }
+            sB.Append(":: ");
+            sB.Append("D ");
+            int n = GetStateInd(tM.State);
+            for (int i = 0; i < n - 1; i++)
+            {
+                sB.Append("A ");
+            }
+            sB.Append("A");
+            if(tape.Values.Count == 0)
+            {
+                sB.Append("hD");
+                return sB.ToString();
+            }
+
+            for(int i = minPos; i <= maxPos; i++)
+            {
+                if(tM.Head == i)
+                {
+                    sB.Append("hD");
+                }
+                else
+                {
+                    sB.Append(" D");
+                }
+
+                int end = GetCharInd(tape[i]);
+                for(int j = 0; j < end; j++)
+                {
+                    sB.Append(" C");
+                }
+            }
+
+            return sB.ToString();
         }
     }
 

@@ -157,7 +157,7 @@ table:
     [' ','A']: {write: 'm', R: copyD}
   copyD:
     [' ','C','D','h','y','A','m']: R
-    ':': copyDFindSpot
+    ':': {R: copyDFindSpot}
   copyDFindSpot:
     [':','D','C','A','h','y']: R
     ' ': {R: copyDFindSpotPostSpace}
@@ -166,7 +166,7 @@ table:
     ' ': {write: 'D', L: getNextToCopy}
   copyC:
     [' ','C','D','h','y','A','m']: R
-    ':': copyCFindSpot
+    ':': {R: copyCFindSpot}
   copyCFindSpot:
     [':','D','C','A','h','y']: R
     ' ': {R: copyCFindSpotPostSpace}
@@ -234,7 +234,7 @@ table:
     'D': {write: 'm', R: copyDWithH}
   copyDWithH:
     [' ','C','D','h','y','A','m']: R
-    ':': copyDWithHFindSpot
+    ':': {R: copyDWithHFindSpot}
   copyDWithHFindSpot:
     [':','D','C','A','h','y']: R
     ' ': {R: copyDWithHFindSpotPostSpace}
