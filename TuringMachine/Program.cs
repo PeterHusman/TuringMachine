@@ -58,6 +58,7 @@ namespace TuringMachine
             RunMode runningMode = RunMode.OncePerPress;
             int tempHead = 0;
             string stateToJumpTo = null;
+            bool nextCharClear = false;
             while (true)
             {
                 while (!Console.KeyAvailable)
@@ -67,6 +68,12 @@ namespace TuringMachine
                 bool advance = true;
                 while (Console.KeyAvailable)
                 {
+                    if(nextCharClear)
+                    {
+                        RenderSetup();
+                        FastRender(turingMachine);
+                        nextCharClear = false;
+                    }
                     ConsoleKeyInfo key = Console.ReadKey(true);
                     switch (key.Key)
                     {
@@ -76,6 +83,31 @@ namespace TuringMachine
                             stateToJumpTo = Console.ReadLine();
                             RenderSetup();
                             FastRender(turingMachine);
+                            continue;
+                        case ConsoleKey.T:
+                            advance = false;
+                            RenderSetup();
+                            FastRender(turingMachine);
+                            Console.WriteLine();
+                            Dictionary<char, int> counts = new Dictionary<char, int>();
+                            foreach(char c in ((Tape<char>)turingMachine.Tape).Values.Values)
+                            {
+                                if(counts.ContainsKey(c))
+                                {
+                                    counts[c]++;
+                                }
+                                else
+                                {
+                                    counts.Add(c, 1);
+                                }
+                            }
+                            Console.WriteLine();
+                            Console.WriteLine("Tape makeup:");
+                            foreach(char c in counts.Keys)
+                            {
+                                Console.WriteLine($"{c}:\t{counts[c]}");
+                            }
+                            nextCharClear = true;
                             continue;
                         case ConsoleKey.D1:
                         case ConsoleKey.D2:
