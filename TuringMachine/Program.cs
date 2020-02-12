@@ -353,14 +353,14 @@ namespace TuringMachine
                     return stateInds[s];
                 }
 
-                stateInds.Add(s, maxStateIndAdded++);
-                return maxStateIndAdded - 1;
+                stateInds.Add(s, maxStateIndAdded);
+                return maxStateIndAdded++;
             }
 
             int maxCharIndAdded = 1;
             int GetCharInd(char s)
             {
-                if(s == ' ')
+                if(s == tape.Blank)
                 {
                     return 0;
                 }
@@ -369,8 +369,8 @@ namespace TuringMachine
                     return charInds[s];
                 }
 
-                charInds.Add(s, maxCharIndAdded++);
-                return maxCharIndAdded - 1;
+                charInds.Add(s, maxCharIndAdded);
+                return maxCharIndAdded++;
             }
 
             void AddState(string state)
