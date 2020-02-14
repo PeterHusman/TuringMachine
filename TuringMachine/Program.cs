@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace TuringMachine
@@ -402,7 +401,7 @@ namespace TuringMachine
                 AddChar(v.Value.tapeSymbol);
                 if(v.Value.movement == TapeMoveDirection.None)
                 {
-                    
+
                 }
                 sB.Append(v.Value.movement == TapeMoveDirection.Right ? "R " : "L ");
                 AddState(v.Value.newState);
